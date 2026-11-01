@@ -8,7 +8,8 @@ const state = {
   history: [],
   clients: [],
   winners: [],
-  marked: new Set()
+  marked: new Set(),
+  role: 'admin'
 };
 
 const adminForm = document.getElementById('adminForm');
@@ -25,9 +26,22 @@ const clientAliasTag = document.getElementById('clientAliasTag');
 const drawButton = document.getElementById('drawButton');
 const resetButton = document.getElementById('resetButton');
 const clearMarksButton = document.getElementById('clearMarksButton');
+const toggleButtons = document.querySelectorAll('.toggle-button');
+const adminSection = document.getElementById('adminSection');
+const clientSection = document.getElementById('clientSection');
 
 function updateRoomLabel() {
   roomCodeLabel.textContent = `Sala: ${state.roomCode || '--'}`;
+}
+
+function setRole(role) {
+  state.role = role;
+  toggleButtons.forEach((button) => {
+    button.classList.toggle('active', button.dataset.role === role);
+  });
+
+  adminSection.classList.toggle('active', role === 'admin');
+  clientSection.classList.toggle('active', role === 'client');
 }
 
 function renderHistory() {
@@ -98,6 +112,32 @@ function renderWinners() {
   });
 }
 
+function checkBingo(card = []) {
+  if (!card.length) return false;
+
+  const marked = new Set(state.marked);
+  const cells = card.map((value, index) => ({ value, index }));
+  const rows = [];
+  for (let row = 0; row < 5; row += 1) {
+    rows.push(cells.slice(row * 5, row * 5 + 5));
+  }
+
+  for (const row of rows) {
+    const isRowComplete = row.every((item) => marked.has(item.value));
+    if (isRowComplete) return true;
+  }
+
+  for (let col = 0; col < 5; col += 1) {
+    const isColumnComplete = Array.from({ length: 5 }, (_, row) => card[row * 5 + col]).every((item) => marked.has(item));
+    if (isColumnComplete) return true;
+  }
+
+  const primaryDiagonal = Array.from({ length: 5 }, (_, index) => card[index * 6]).every((item) => marked.has(item));
+  const secondaryDiagonal = Array.from({ length: 5 }, (_, index) => card[index * 4 + 4]).every((item) => marked.has(item));
+
+  return primaryDiagonal || secondaryDiagonal;
+}
+
 function renderCard(card = []) {
   if (!card || !card.length) {
     cardBoard.innerHTML = '';
@@ -131,6 +171,10 @@ function renderCard(card = []) {
       }
 
       renderCard(state.myCard);
+
+      if (checkBingo(state.myCard)) {
+        window.alert('Bingo! Você completou a cartela.');
+      }
     });
 
     cardBoard.appendChild(cellElement);
@@ -141,13 +185,16 @@ adminForm.addEventListener('submit', (event) => {
   event.preventDefault();
 
   const roomCode = document.getElementById('adminRoom').value.trim();
+  const password = document.getElementById('adminPassword').value.trim();
   const names = document.getElementById('namesInput').value.trim();
 
-  if (!roomCode || !names) return;
+  if (!roomCode || !password || !names) return;
 
   state.roomCode = roomCode.toUpperCase();
   state.isAdmin = true;
   updateRoomLabel();
+
+  socket.emit('admin-login', { roomCode: state.roomCode, password });
   socket.emit('upsert-room', { roomCode: state.roomCode, names });
 });
 
@@ -191,6 +238,12 @@ clearMarksButton.addEventListener('click', () => {
   renderCard(state.myCard);
 });
 
+toggleButtons.forEach((button) => {
+  button.addEventListener('click', () => {
+    setRole(button.dataset.role);
+  });
+});
+
 socket.on('connect', () => {
   if (state.roomCode) {
     socket.emit('request-room-state', { roomCode: state.roomCode });
@@ -223,7 +276,7 @@ socket.on('my-card', ({ card, alias }) => {
   renderCard(state.myCard);
 });
 
-socket.on('draw-result', ({ value, history }) => {
+socket.on('draw-result', ({ history }) => {
   state.history = history || [];
   renderHistory();
   renderCard(state.myCard);
@@ -233,6 +286,7 @@ socket.on('room-error', ({ message }) => {
   window.alert(message);
 });
 
+setRole('admin');
 renderHistory();
 renderClients();
 renderWinners();

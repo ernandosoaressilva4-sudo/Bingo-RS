@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Bingo RS | Controle ao vivo</title>
+    <title>Bingo RS | Operação ao vivo</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -13,7 +13,7 @@
     <div class="page-shell">
       <header class="topbar">
         <div>
-          <p class="eyebrow">Sistema operacional de bingo</p>
+          <p class="eyebrow">Sistema profissional</p>
           <h1>Bingo RS</h1>
         </div>
         <div class="room-pill" id="roomCodeLabel">Sala: --</div>
@@ -25,7 +25,7 @@
           <strong id="totalClients">0</strong>
         </div>
         <div class="stat-card">
-          <span>Último Nome</span>
+          <span>Último nome</span>
           <strong id="lastCall">—</strong>
         </div>
         <div class="stat-card">
@@ -36,65 +36,85 @@
 
       <main class="layout">
         <section class="panel admin-panel">
-          <div class="panel-header">
-            <div>
-              <p class="section-label">Painel administrativo</p>
-              <h2>Controle da sala</h2>
+          <div class="segment-toggle">
+            <button type="button" class="toggle-button active" data-role="admin">Administrador</button>
+            <button type="button" class="toggle-button" data-role="client">Cliente</button>
+          </div>
+
+          <div id="adminSection" class="role-section active">
+            <div class="panel-header">
+              <div>
+                <p class="section-label">Painel administrativo</p>
+                <h2>Controle da sala</h2>
+              </div>
+            </div>
+
+            <form id="adminForm" class="stack-form">
+              <label>
+                Código da sala
+                <input id="adminRoom" name="roomCode" type="text" maxlength="8" placeholder="EX: BINGO01" required />
+              </label>
+              <label>
+                Senha do administrador
+                <input id="adminPassword" name="password" type="password" placeholder="admin123" required />
+              </label>
+              <label>
+                Nomes das cartelas
+                <textarea id="namesInput" name="names" rows="7" placeholder="Ex: Maria, João, Ana, Pedro, Sofia, ..." required></textarea>
+              </label>
+              <button type="submit" class="primary">Salvar e ativar sala</button>
+            </form>
+
+            <div class="action-row">
+              <button id="drawButton" type="button" class="primary">Sortear nome</button>
+              <button id="resetButton" type="button" class="secondary">Resetar sala</button>
+            </div>
+
+            <div class="mini-panel">
+              <h3>Últimos sorteios</h3>
+              <ul id="historyList" class="tag-list"></ul>
+            </div>
+
+            <div class="mini-panel">
+              <h3>Clientes ativos</h3>
+              <ul id="clientsList" class="clients-list"></ul>
+            </div>
+
+            <div class="mini-panel">
+              <h3>Vencedores</h3>
+              <ul id="winnerList" class="winner-list"></ul>
             </div>
           </div>
 
-          <form id="adminForm" class="stack-form">
-            <label>
-              Código da sala
-              <input id="adminRoom" name="roomCode" type="text" maxlength="8" placeholder="EX: BINGO01" required />
-            </label>
-            <label>
-              Nomes das cartelas
-              <textarea id="namesInput" name="names" rows="7" placeholder="Ex: Maria, João, Ana, Pedro, Sofia, ..." required></textarea>
-            </label>
-            <button type="submit">Salvar sala</button>
-          </form>
+          <div id="clientSection" class="role-section">
+            <div class="panel-header">
+              <div>
+                <p class="section-label">Área do cliente</p>
+                <h2>Entrar na sala</h2>
+              </div>
+            </div>
 
-          <div class="action-row">
-            <button id="drawButton" type="button" class="primary">Sortear nome</button>
-            <button id="resetButton" type="button" class="secondary">Resetar sala</button>
-          </div>
-
-          <div class="mini-panel">
-            <h3>Últimos sorteios</h3>
-            <ul id="historyList" class="tag-list"></ul>
-          </div>
-
-          <div class="mini-panel">
-            <h3>Clientes ativos</h3>
-            <ul id="clientsList" class="clients-list"></ul>
-          </div>
-
-          <div class="mini-panel">
-            <h3>Vencedores</h3>
-            <ul id="winnerList" class="winner-list"></ul>
+            <form id="clientForm" class="client-form">
+              <label>
+                Código da sala
+                <input id="clientRoom" type="text" maxlength="8" placeholder="EX: BINGO01" required />
+              </label>
+              <label>
+                Seu nome
+                <input id="clientAlias" type="text" maxlength="30" placeholder="Seu nome" required />
+              </label>
+              <button type="submit" class="primary">Entrar na sala</button>
+            </form>
           </div>
         </section>
 
         <section class="panel board-panel">
           <div class="panel-header">
             <div>
-              <p class="section-label">Área do cliente</p>
+              <p class="section-label">Cartela do participante</p>
               <h2>Minha cartela</h2>
             </div>
           </div>
-
-          <form id="clientForm" class="client-form">
-            <label>
-              Código da sala
-              <input id="clientRoom" type="text" maxlength="8" placeholder="EX: BINGO01" required />
-            </label>
-            <label>
-              Seu nome
-              <input id="clientAlias" type="text" maxlength="30" placeholder="Seu nome" required />
-            </label>
-            <button type="submit">Entrar na sala</button>
-          </form>
 
           <div class="card-header">
             <span id="clientAliasTag">Cliente</span>

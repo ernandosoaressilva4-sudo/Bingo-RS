@@ -7,6 +7,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
+const ADMIN_SECRET = process.env.ADMIN_SECRET || 'admin123';
 const rooms = new Map();
 
 function normalizeRoomCode(code = '') {
@@ -31,11 +32,10 @@ function shuffle(array) {
 }
 
 function buildCard(names) {
-  if (!names.length) {
-    return Array.from({ length: 25 }, (_, index) => `Cartela ${index + 1}`);
-  }
+  const uniqueNames = [...new Set(names)];
+  const source = uniqueNames.length ? uniqueNames : ['Cartela 1', 'Cartela 2', 'Cartela 3'];
+  const list = shuffle(source);
 
-  const list = shuffle(names);
   return Array.from({ length: 25 }, (_, index) => list[index % list.length]);
 }
 
@@ -48,7 +48,8 @@ function getRoom(roomCode) {
       names: [],
       drawHistory: [],
       winners: [],
-      clients: new Map()
+      clients: new Map(),
+      createdAt: Date.now()
     });
   }
 
@@ -64,7 +65,8 @@ function getPublicRoomState(room) {
     winners: room.winners,
     clients: Array.from(room.clients.values()).map((client) => ({
       id: client.id,
-      alias: client.alias
+      alias: client.alias,
+      card: client.card
     }))
   };
 }
@@ -72,19 +74,36 @@ function getPublicRoomState(room) {
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.get('/health', (_, response) => {
-  response.json({ ok: true, rooms: rooms.size });
+  response.json({ ok: true, rooms: rooms.size, adminSecretConfigured: Boolean(ADMIN_SECRET) });
 });
 
 io.on('connection', (socket) => {
+  socket.on('admin-login', ({ roomCode, password }) => {
+    const normalized = normalizeRoomCode(roomCode);
+    const room = getRoom(normalized);
+
+    if (String(password || '').trim() !== ADMIN_SECRET) {
+      socket.emit('room-error', { message: 'Senha do administrador inválida.' });
+      return;
+    }
+
+    room.adminSocketId = socket.id;
+    socket.join(room.roomCode);
+    io.to(room.roomCode).emit('room-state', getPublicRoomState(room));
+  });
+
   socket.on('upsert-room', ({ roomCode, names }) => {
     const normalized = normalizeRoomCode(roomCode);
     const room = getRoom(normalized);
     const parsedNames = parseNames(names);
 
     room.names = parsedNames;
-    room.adminSocketId = socket.id;
     room.drawHistory = [];
     room.winners = [];
+
+    if (!room.adminSocketId) {
+      room.adminSocketId = socket.id;
+    }
 
     socket.join(room.roomCode);
 
@@ -161,7 +180,7 @@ io.on('connection', (socket) => {
     }
 
     if (!room.winners.includes(winnerAlias)) {
-      room.winners = [winnerAlias, ...room.winners].slice(0, 5);
+      room.winners = [winnerAlias, ...room.winners].slice(0, 10);
     }
 
     io.to(room.roomCode).emit('room-state', getPublicRoomState(room));
@@ -208,9 +227,7 @@ io.on('connection', (socket) => {
         room.clients.delete(socket.id);
       }
 
-      if (room.roomCode) {
-        io.to(room.roomCode).emit('room-state', getPublicRoomState(room));
-      }
+      io.to(room.roomCode).emit('room-state', getPublicRoomState(room));
     }
   });
 });

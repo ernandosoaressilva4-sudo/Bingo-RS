@@ -138,6 +138,37 @@ h2 {
   backdrop-filter: blur(14px);
 }
 
+.segment-toggle {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.toggle-button {
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  background: rgba(148, 163, 184, 0.08);
+  color: var(--text);
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.toggle-button.active {
+  background: rgba(244, 185, 66, 0.12);
+  border-color: rgba(244, 185, 66, 0.5);
+  color: #fef3c7;
+}
+
+.role-section {
+  display: none;
+}
+
+.role-section.active {
+  display: block;
+}
+
 .panel-header {
   margin-bottom: 18px;
 }
