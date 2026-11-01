@@ -1,0 +1,13 @@
+{
+  "name": "bingo-rs",
+  "version": "1.0.0",
+  "description": "Aplicativo de bingo em tempo real com painel administrativo e cartelas para clientes",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "socket.io": "^4.8.1"
+  }
+}

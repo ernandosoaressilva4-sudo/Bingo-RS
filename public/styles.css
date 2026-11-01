@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bingo-RS</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Aplicativo de bingo</p>
+          <h1>Bingo-RS</h1>
+        </div>
+        <div class="room-pill" id="roomCodeLabel">Sala: --</div>
+      </header>
+
+      <main class="layout">
+        <section class="panel admin-panel">
+          <h2>Administrador</h2>
+          <form id="adminForm">
+            <label>
+              Código da sala
+              <input id="adminRoom" name="roomCode" type="text" maxlength="8" placeholder="EX: BINGO01" required />
+            </label>
+            <label>
+              Nomes das cartelas
+              <textarea id="namesInput" name="names" rows="8" placeholder="Ex: Maria, João, Ana, Pedro, ..." required></textarea>
+            </label>
+            <button type="submit">Salvar cartelas</button>
+          </form>
+
+          <div class="divider"></div>
+
+          <div class="admin-actions">
+            <button id="drawButton" class="secondary" type="button">Sortear nome</button>
+          </div>
+
+          <div class="history">
+            <h3>Últimos sorteios</h3>
+            <ul id="historyList"></ul>
+          </div>
+        </section>
+
+        <section class="panel board-panel">
+          <h2>Clientes</h2>
+          <form id="clientForm" class="client-form">
+            <label>
+              Código da sala
+              <input id="clientRoom" type="text" maxlength="8" placeholder="EX: BINGO01" required />
+            </label>
+            <label>
+              Seu nome
+              <input id="clientAlias" type="text" maxlength="30" placeholder="Seu nome" required />
+            </label>
+            <button type="submit">Entrar na sala</button>
+          </form>
+
+          <div class="card-wrapper">
+            <div class="card-header">
+              <h3>Minha cartela</h3>
+              <span id="clientAliasTag">Cliente</span>
+            </div>
+            <div id="cardBoard" class="card-board" aria-live="polite"></div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/app.js"></script>
+  </body>
+</html>
